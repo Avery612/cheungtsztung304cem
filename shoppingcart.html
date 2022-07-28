@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+  <script>
+
+
+$(document).ready(function(){
+      var user = localStorage.getItem("user");
+      var mydata="username="+user;
+      $.ajax({
+   
+   type: 'POST',
+   url:'http://127.0.0.1:8080/product',
+   dataType: "text",
+   data:mydata,
+   success: function(r){
+   alert(r);
+
+   var abc=JSON.parse(r);
+alert(JSON.stringify(abc[0]['image']));
+ c=JSON.stringify(abc[0]['image']).replace('"',"");
+ d=c.replace('"',"");
+ alert(d);
+   $("#show1").attr("src",d);
+
+
+
+   if(r=="success"){
+   alert("login ok");
+   localStorage.setItem("user", alogin);
+   }else{
+   alert("login fail");
+   return;
+   }
+   },error:function(xhr,status,error){
+   console.log(error.message);
+   }
+   });
+    
+   
+       $("#shoppingcart").click(function()  {
+   
+           var alogin = $("#login").val();
+      var apass = $("#password").val();
+      var arepass= $("#repassword").val();
+   
+      var mydata="apple="+user+"&orange="+"shoes.png";
+   alert("myloiung="+mydata);
+  
+   
+       });
+   
+    $("#submit").click(function()  {
+    $.ajax({
+   type:'GET',
+   dataType:"json",
+   url:'https://data.weather.gov.hk/weatherAPI/opendata/weather.php?dataType=fnd&lang=tc',
+   
+   success:function(data,status,xhr){
+   console.log('data:',data);
+   alert(data);
+   
+   //var returnedData=JSON.parse(data.length);
+   var returnedData=JSON.stringify(data); //decode JSON string object
+   
+   alert(data.weatherForecast[0]['forecastWeather']);
+   
+   $("#showme").html(data.weatherForecast[0]['forecastWeather']);
+   
+   }
+   });
+     var alogin = $("#login").val();
+      var apass = $("#password").val();
+      var arepass= $("#repassword").val();
+      
+      /*if(apass==arepass){
+         alert("match");
+       localStorage.setItem('apple',apass);
+       }else{
+       alert("unmatch");
+       $("#showme").html("Please try again!!!!!!!").css("background-color","yellow").
+       animate({height: "300px"});
+       return;
+       }*/
+       
+       var mydata="apple="+user+"&orange="+"shoes.png";
+     "&orange="+apass;
+   alert(mydata);
+   $.ajax({
+   
+   type: 'POST',
+   url:'http://127.0.0.1:8080/shoppingcart',
+   dataType: "text",
+   data:mydata,
+   success: function(r){
+   alert(r);
+   if(r=="success"){
+   alert("login ok");
+   }else{
+   alert("login fail");
+   return;
+   }
+   },error:function(xhr,status,error){
+   console.log(error.message);
+   }
+   });
+   
+   });
+
+     $("#remove").click(function(){
+      var image = "shoes.png";
+      var mydata="username="+user+"&image="+image;
+    //alert("myloiung="+mydata);
+      alert(mydata);
+      $.ajax({
+    type: 'POST',
+    url:'http://127.0.0.1:8080/shoppingcart',
+    dataType: "text",
+    data:mydata,
+    success: function(r){
+        alert(r);
+      if(r=="success"){
+        $("#show1").attr("src","");
+        window.href="/shoppingcart";
+        //alert("login ok");
+        //localStorage.setItem("user", alogin);
+      }else{
+        //alert("login fail");
+        return; 
+      }
+    },error:function(xhr,status,error){
+      console.log(error.message);
+    }
+    });
+
+    });
+
+   });
+   
+
+   </script>
+  
+<script>
+
+$(document).ready(function(){
+
+
+
+/*
+var mydata="username="+user+"&image="+image;
+
+$.ajax({
+type: 'GET',
+url:'http://127.0.0.1:8080/shoppingcart',
+dataType: "text",
+data:mydata,
+success: function(r){
+    alert(r);
+  if(r=="success"){
+    //alert("login ok");
+    localStorage.setItem("image", image);
+    $("#image").src = image;
+  }else{
+    //alert("login fail");
+    return; 
+  }
+},error:function(xhr,status,error){
+console.log(error.message);
+}
+});
+*/
+});
+
+
+
+ /* Set rates + misc */
+var taxRate = 0.05;
+var shippingRate = 15.00; 
+var fadeTime = 300;
+
+
+/* Assign actions */
+$('.product-quantity input').change( function() {
+  updateQuantity(this);
+});
+
+$('.product-removal button').click( function() {
+
+alert("abd");
+
+
+  removeItem(this);
+});
+
+
+
+/* Recalculate cart */
+function recalculateCart(){
+  var subtotal = 0;
+  
+  /* Sum up row totals */
+  $('.product').each(function () {
+    subtotal += parseFloat($(this).children('.product-line-price').text());
+  });
+  
+  /* Calculate totals */
+  var tax = subtotal * taxRate;
+  var shipping = (subtotal > 0 ? shippingRate : 0);
+  var total = subtotal + tax + shipping;
+  
+  /* Update totals display */
+  $('.totals-value').fadeOut(fadeTime, function() {
+    $('#cart-subtotal').html(subtotal.toFixed(2));
+    $('#cart-tax').html(tax.toFixed(2));
+    $('#cart-shipping').html(shipping.toFixed(2));
+    $('#cart-total').html(total.toFixed(2));
+    if(total == 0){
+      $('.checkout').fadeOut(fadeTime);
+    }else{
+      $('.checkout').fadeIn(fadeTime);
+    }
+    $('.totals-value').fadeIn(fadeTime);
+  });
+}
+
+
+/* Update quantity */
+function updateQuantity(quantityInput){
+  /* Calculate line price */
+  var productRow = $(quantityInput).parent().parent();
+  var price = parseFloat(productRow.children('.product-price').text());
+  var quantity = $(quantityInput).val();
+  var linePrice = price * quantity;
+  
+  /* Update line price display and recalc cart totals */
+  productRow.children('.product-line-price').each(function () {
+    $(this).fadeOut(fadeTime, function() {
+      $(this).text(linePrice.toFixed(2));
+      recalculateCart();
+      $(this).fadeIn(fadeTime);
+    });
+  });  
+}
+
+
+/* Removeitem from cart */
+function removeItem(removeButton){
+  /* Remove row from DOM and recalc cart total */
+  var productRow = $(removeButton).parent().parent();
+  productRow.slideUp(fadeTime, function() {
+    productRow.remove();
+    recalculateCart();
+  });
+};
+
+</script>
+
+<style>
+/*
+I wanted to go with a mobile first approach, but it actually lead to more verbose CSS in this case, so I've gone web first. Can't always force things...
+
+Side note: I know that this style of nesting in SASS doesn't result in the most performance efficient CSS code... but on the OCD/organizational side, I like it. So for CodePen purposes, CSS selector performance be damned.
+*/
+
+/* Global settings */
+$color-border: #eee;
+$color-label: #aaa;
+$font-default: 'HelveticaNeue-Light', 'Helvetica Neue Light', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+$font-bold: 'HelveticaNeue-Medium', 'Helvetica Neue Medium';
+
+
+/* Global "table" column settings */
+.product-image { float: left; width: 20%; }
+.product-details { float: left; width: 37%; }
+.product-price { float: left; width: 12%; }
+.product-quantity { float: left; width: 10%; }
+.product-removal { float: left; width: 9%; }
+.product-line-price { float: left; width: 12%; text-align: right; }
+
+
+/* This is used as the traditional .clearfix class */
+.group:before,
+.group:after {
+    content: '';
+    display: table;
+} 
+.group:after {
+    clear: both;
+}
+.group {
+    zoom: 1;
+}
+
+
+/* Apply clearfix in a few places */
+.shopping-cart, .column-labels, .product, .totals-item {
+  @extend .group;
+}
+
+
+/* Apply dollar signs */
+.product .product-price:before, .product .product-line-price:before, .totals-value:before {
+  content: '$';
+}
+
+
+/* Body/Header stuff */
+body {
+  padding: 0px 30px 30px 20px;
+  font-family: $font-default;
+  font-weight: 100;
+}
+
+h1 {
+  font-weight: 100;
+}
+
+label {
+  color: $color-label;
+}
+
+.shopping-cart {
+  margin-top: -45px;
+}
+
+
+/* Column headers */
+.column-labels {
+  label {
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+    border-bottom: 1px solid $color-border;
+  }
+  
+  .product-image, .product-details, .product-removal {
+    text-indent: -9999px;
+  }
+}
+
+
+/* Product entries */
+.product {
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid $color-border;
+  
+  .product-image {
+    text-align: center;
+    img {
+      width: 100px;
+    }
+  }
+  
+  .product-details {
+    .product-title {
+      margin-right: 20px;
+      font-family: $font-bold;
+    }
+    .product-description {
+      margin: 5px 20px 5px 0;
+      line-height: 1.4em;
+    }
+  }
+  
+  .product-quantity {
+    input {
+      width: 40px;
+      
+    }
+  }
+  
+  .remove-product {
+    border: 0;
+    padding: 4px 8px;
+    background-color: #c66;
+    color: #fff;
+    font-family: $font-bold;
+    font-size: 12px;
+    border-radius: 3px;
+  }
+  
+  .remove-product:hover {
+    background-color: #a44;
+  }
+}
+
+
+/* Totals section */
+.totals {
+  .totals-item {
+    float: right;
+    clear: both;
+    width: 100%;
+    margin-bottom: 10px;
+    
+    label {
+      float: left;
+      clear: both;
+      width: 79%;
+      text-align: right;
+    }
+    
+    .totals-value {
+      float: right;
+      width: 21%;
+      text-align: right;
+    }
+  }
+  
+  .totals-item-total {
+    font-family: $font-bold;
+  }
+}
+
+.checkout {
+  float: right;
+  border: 0;
+  margin-top: 20px;
+  padding: 6px 25px;
+  background-color: #6b6;
+  color: #fff;
+  font-size: 25px;
+  border-radius: 3px;
+}
+
+.checkout:hover {
+  background-color: #494;
+}
+
+/* Make adjustments for tablet */
+@media screen and (max-width: 650px) {
+  
+  .shopping-cart {
+    margin: 0;
+    padding-top: 20px;
+    border-top: 1px solid $color-border;
+  }
+  
+  .column-labels {
+    display: none;
+  }
+  
+  .product-image {
+    float: right;
+    width: auto;
+    img {
+      margin: 0 0 10px 10px;
+    }
+  }
+  
+  .product-details {
+    float: none;
+    margin-bottom: 10px;
+    width: auto;
+  }
+  
+  .product-price {
+    clear: both;
+    width: 70px;
+  }
+  
+  .product-quantity {
+    width: 100px;
+    input {
+      margin-left: 20px;
+    }
+  }
+  
+  .product-quantity:before {
+    content: 'x';
+  }
+  
+  .product-removal {
+    width: auto;
+  }
+  
+  .product-line-price {
+    float: right;
+    width: 70px;
+  }
+  
+}
+
+
+/* Make more adjustments for phone */
+@media screen and (max-width: 350px) {
+  
+  .product-removal {
+    float: right;
+  }
+  
+  .product-line-price {
+    float: right;
+    clear: left;
+    width: auto;
+    margin-top: 10px;
+  }
+  
+  .product .product-line-price:before {
+    content: 'Item Total: $';
+  }
+  
+  .totals {
+    .totals-item {
+      label {
+        width: 60%;
+      }
+      
+      .totals-value {
+        width: 40%;
+      }
+    }
+  }
+}
+</style>
+<div class="wrapper">
+  <li><a class="nav-link scrollto" href="/mainpage">mainpage</a></li>
+<h1>Shopping Cart</h1>
+
+<br>
+<br>
+
+<div class="shopping-cart">
+  <img src="" id="show1" class="image1"></div>
+      
+  <button id="remove" class=" checkout">remove</button>
+
+</div>
